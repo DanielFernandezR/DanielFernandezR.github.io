@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Página Principal</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <!-- Bootstrap hecho por mí para pequeñas modificaciones -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Añadir ruta a jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- Añadir ruta a mi archivo JS con la lógica -->
+  <script type="text/javascript" src="js/functions.js"></script>
+</head>
+
+<body>
+  <h1>Buscar imágenes en la página Flickr</h1>
+  <!-- Creamos el formulario para búsquedas de etiquetas -->
+  <div id="formulario">
+    <form>
+      <div class="row">
+        <div class="col"></div>
+        <div class="col">
+          <label for="etiquetas">Etiquetas</label>
+          <!-- Le añadimos una ID al input donde se escribirán las etiquetas -->
+          <input id="etiquetas" type="etiquetas" class="form-control">
+          <label for="tipoBusqueda">Tipo de Búsqueda</label>
+          <!-- Le añadimos una ID al select donde se elegirá si cogemos todas o algunas etiquetas -->
+          <select id="tipoBusqueda" class="form-control">
+            <option selected>Todas</option>
+            <option>Algunas</option>
+          </select>
+          <!-- Creamos el botón para ejecutar comandos JS y crear la tabla -->
+          <button id="boton" type="button" class="btn btn-primary">Buscar</button>
+        </div>
+        <div class="col"></div>
+      </div>
+    </form>
+  </div>
+  <div id="contenido">
+    <div class="row justify-content-center">
+      <!-- Creamos una tabla para ver el contenido de las imágenes -->
+      <div class="col-auto">
+        <table class="table table-striped table-responsive">
+          <thead>
+            <tr>
+              <th scope="col">Título</th>
+              <th scope="col">Miniatura</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Autor</th>
+              <th scope="col">Etiquetas</th>
+              <th scope="col">Enlace</th>
+            </tr>
+          </thead>
+          <!-- Asignamos una ID para usar después JS en la tabla -->
+          <tbody id="tablaFotos">
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    $("#boton").click(function () {
+      let enlace = "https://api.flickr.com/services/feeds/photos_public.gne?format=json&jsoncallback=?&tags=";
+      //* Creamos un enlace y le añadimos los valores de etiquetas separados por comas en vez de espacios */
+      enlace += $("#etiquetas").val().split(" ").join();
+      //* Si seleccionamos "Todas" en el formulario, nos añade al enlace &tagmode=all, si no, nos añade &tagmode=any */
+      if ($('#tipoBusqueda').val() == "Todas") {
+        enlace += "&tagmode=all";
+      } else {
+        enlace += "&tagmode=any";
+      }
+      //* Vaciamos el contenido de la tabla cada vez que volvamos a realizar otra búsqueda */
+      $('#tablaFotos').html("");
+
+      //* Gracias al enlace nos devuelve un json el cual podemos iterar sobre sus atributos. */
+      $.getJSON(enlace, function (result) {
+        //* Para cada item dentro del atributo items... */
+        $.each(result.items, function (index, item) {
+          let tags = "";
+          let tagslist = item.tags.split(" ");
+          //* Para separar cada tag, hacemos un split del string de los tags, y una vez hecho lista, para cada tag, creamos un badge y asignamos el string a la variable tags */
+          $.each(tagslist, function (index, tag) { tags += "<span class='badge badge-pill badge-primary'>" + tag + "</span>"; })
+          //* Para cada valor de items, crea una row nueva en la tabla y añade los atributos que le digamos en la variable contenido. */
+          let contenido = "<tr><td>" + item.title + "</td><td><img src='" + item.media.m + "'></td><td>" + item.published + "</td><td>" + item.author + "</td><td>" + tags + "</td><td><a href='" + item.link + "' class='btn btn-success'>Imágen</a></td></tr>";
+          $("#tablaFotos").append(contenido);
+        }
+        )
+      })
+    });
+  </script>
+</body>
+
+</html>
